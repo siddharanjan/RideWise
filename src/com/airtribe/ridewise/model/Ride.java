@@ -23,9 +23,7 @@ public class Ride {
     private String cancellationReason;
 
     public Ride(String id, Rider rider, VehicleType vehicleType, double distanceInKm) {
-        if (distanceInKm <= 0) {
-            throw new IllegalArgumentException("Distance must be greater than zero: " + distanceInKm);
-        }
+        requireValidDistance(distanceInKm);
         this.id = Objects.requireNonNull(id, "ride id is required");
         this.rider = Objects.requireNonNull(rider, "rider is required");
         this.vehicleType = Objects.requireNonNull(vehicleType, "vehicle type is required");
@@ -92,6 +90,14 @@ public class Ride {
         }
         this.cancellationReason = reason;
         this.status = RideStatus.CANCELLED;
+    }
+
+    // shared by the constructor and by RideService, which needs to check this
+    // before it burns an id on a request that's going to get rejected anyway
+    public static void requireValidDistance(double distanceInKm) {
+        if (!(distanceInKm > 0) || Double.isInfinite(distanceInKm)) {
+            throw new IllegalArgumentException("Distance must be a finite number greater than zero: " + distanceInKm);
+        }
     }
 
     private void requireStatus(RideStatus expected, String action) {

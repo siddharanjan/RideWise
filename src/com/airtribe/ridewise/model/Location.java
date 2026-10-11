@@ -7,6 +7,8 @@ public final class Location {
     private final double y;
 
     public Location(double x, double y) {
+        requireFinite(x, "x");
+        requireFinite(y, "y");
         this.x = x;
         this.y = y;
     }
@@ -26,6 +28,12 @@ public final class Location {
         double dx = x - other.x;
         double dy = y - other.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    private static void requireFinite(double value, String axis) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            throw new IllegalArgumentException(axis + " must be a finite number: " + value);
+        }
     }
 
     @Override

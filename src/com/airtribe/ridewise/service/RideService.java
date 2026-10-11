@@ -41,6 +41,9 @@ public class RideService {
 
     public Ride requestRide(Rider rider, VehicleType vehicleType, double distanceInKm) {
         Objects.requireNonNull(rider, "rider is required");
+        Objects.requireNonNull(vehicleType, "vehicle type is required");
+        // check this before generating an id, so a bad request doesn't burn one
+        Ride.requireValidDistance(distanceInKm);
         Ride ride = new Ride(idGenerator.next(), rider, vehicleType, distanceInKm);
         rides.put(ride.getId(), ride);
 
@@ -72,8 +75,10 @@ public class RideService {
 
     public Ride cancelRide(String rideId, String reason) {
         Ride ride = getRide(rideId);
-        ride.getDriver().ifPresent(driverService::releaseWithoutTrip);
+        // cancel first - it throws if the ride already finished one way or
+        // another, so a completed ride's driver never gets touched
         ride.cancel(reason);
+        ride.getDriver().ifPresent(driverService::releaseWithoutTrip);
         return ride;
     }
 

@@ -9,6 +9,7 @@ public class Driver {
     private final VehicleType vehicleType;
     private Location currentLocation;
     private boolean available;
+    private boolean onTrip;
     private int completedTrips;
 
     public Driver(String id, String name, VehicleType vehicleType, Location currentLocation) {
@@ -49,33 +50,44 @@ public class Driver {
 
     public void goOnTrip() {
         if (!available) {
-            throw new IllegalStateException("Driver " + id + " is already on a trip");
+            throw new IllegalStateException("Driver " + id + " cannot be booked right now");
         }
         available = false;
+        onTrip = true;
     }
 
     public void finishTrip() {
-        if (available) {
+        if (!onTrip) {
             throw new IllegalStateException("Driver " + id + " is not on a trip");
         }
         completedTrips++;
         available = true;
+        onTrip = false;
     }
 
     // used when a ride gets cancelled before it starts - driver goes back
     // online but this doesn't count as a completed trip
     public void abortTrip() {
+        if (!onTrip) {
+            throw new IllegalStateException("Driver " + id + " is not on a trip");
+        }
         available = true;
+        onTrip = false;
     }
 
+    // manual duty toggle. blocked while on a trip so nobody can flip a busy
+    // driver back to "available" and get them double-booked
     public void setAvailable(boolean available) {
+        if (onTrip) {
+            throw new IllegalStateException("Driver " + id + " is on a trip, cannot change duty status");
+        }
         this.available = available;
     }
 
     @Override
     public String toString() {
+        String status = onTrip ? "on trip" : (available ? "available" : "off duty");
         return String.format("%s %s (%s) at %s - %s, %d trips",
-                id, name, vehicleType, currentLocation,
-                available ? "available" : "on trip", completedTrips);
+                id, name, vehicleType, currentLocation, status, completedTrips);
     }
 }

@@ -28,7 +28,7 @@ Dependencies only go one direction - Main depends on services, services depend o
 
 **Rider** - id, name, location. moveTo() is the only way to change the location.
 
-**Driver** - id, name, vehicleType, currentLocation, available, completedTrips. State changes go through goOnTrip()/finishTrip()/abortTrip() instead of a plain setter for `available`, because finishTrip() also bumps the trip counter and those two things need to always happen together. finishTrip() throws if called on a driver that isn't actually on a trip.
+**Driver** - id, name, vehicleType, currentLocation, available, onTrip, completedTrips. State changes go through goOnTrip()/finishTrip()/abortTrip() instead of a plain setter, because finishTrip() also bumps the trip counter and those two things need to always happen together. `available` and `onTrip` are two separate flags on purpose - a driver can be off duty (not available, not on a trip) or busy (not available, on a trip), and those need different handling. setAvailable() (the manual duty toggle) refuses to run while onTrip is true, so nobody can free a driver who's actually mid-trip. finishTrip()/abortTrip() both throw if called on a driver that isn't actually on a trip.
 
 **Ride** - id, rider, driver, vehicleType, distanceInKm, status, requestedAt, receipt. Enforces its own state machine - assignTo() only works from REQUESTED, complete() only from ASSIGNED, cancel() refuses if the ride already finished one way or another. getDriver() and getReceipt() return Optional since "no driver yet" / "not priced yet" are both normal states, not errors.
 
